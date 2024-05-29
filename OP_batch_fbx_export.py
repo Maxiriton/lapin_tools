@@ -42,7 +42,7 @@ class IO_OT_BatchExportFBX(Operator):
 
                 bpy.ops.better_export.fbx(filepath=file_path, 
                                           my_fbx_axis='Unity', 
-                                          use_selection=True, 
+                                          use_selection=True,
                                           use_only_deform_bones=True,
                                           use_animation=True,
                                           use_export_materials=False,
