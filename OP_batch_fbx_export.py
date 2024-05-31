@@ -2,6 +2,7 @@ import bpy
 import time
 from bpy.types import Operator
 from bpy.props import IntProperty
+from addon_utils import enable
 from os import path
 
 from .utils import get_addon_prefs
@@ -12,17 +13,18 @@ class IO_OT_BatchExportFBX(Operator):
     bl_label = "Export all animation"
     bl_options = {'REGISTER','UNDO'}
 
-    distance : IntProperty(
-        default=-7,
-        min= -100,
-        max=100
-    )
-
     @classmethod
     def poll(cls, context):
         return context.mode == 'OBJECT' and context.active_object.type == 'ARMATURE'
 
     def execute(self, context):
+        better_fbx_addon_name = 'better_fbx'
+
+        success = enable(better_fbx_addon_name)
+        if not success:
+            self.report({'WARNING'}, "Please enable the better fbx addon ! ")
+            return {'CANCELLED'}
+
 
         rel_path = get_addon_prefs().export_folder_default
         abs_path = bpy.path.abspath(rel_path)

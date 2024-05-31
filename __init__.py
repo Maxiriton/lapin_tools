@@ -34,6 +34,7 @@ import bpy
 from bpy.types import AddonPreferences
 from bpy.props import StringProperty
 from . import OP_batch_fbx_export
+from . import OP_batch_lapin_import
 
 
 class LAPINS_prefs(AddonPreferences):
@@ -57,6 +58,7 @@ classes = (
 
 addon_modules = (
     OP_batch_fbx_export,
+    OP_batch_lapin_import,
 )
 
 def register():
