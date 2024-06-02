@@ -47,10 +47,19 @@ class LAPINS_prefs(AddonPreferences):
         subtype='DIR_PATH'
     )
 
+    lapin_rig_file : StringProperty(
+        name="Lapin Rig File",
+        description="Path to the blend file where Lapin's rig is located",
+        default="\\\\192.168.6.241\\rab00-rech-tests-dev\\LAPIN3\\Entites\\Personnages\\Lapin\\Rig\\char_rabbit_rig_v00.blend",
+        subtype='FILE_PATH'
+    )
+
     def draw(self, context):
         layout = self.layout
         row= layout.row(align=True)
         row.prop(self, "export_folder_default")
+        row= layout.row(align=True)
+        row.prop(self, "lapin_rig_file")
        
 classes = (
     LAPINS_prefs,

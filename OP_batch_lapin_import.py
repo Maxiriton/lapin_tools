@@ -1,20 +1,108 @@
 import bpy
+import re
 from bpy.types import Operator
 from bpy_extras.io_utils import ImportHelper
+from os import listdir, path, pardir
 
 from .utils import get_addon_prefs
 
+def find_matching_object(object):
+    name = object.name
+    isolated_name = re.search("(rabbit_[a-zA-Z]+)(_[MRL])?", name)
+    isolated_name = isolated_name.group(0)
+    isolated_name = isolated_name.replace('_M','.M').replace('_L','.L').replace('_R','.R')
+    return bpy.data.objects.get(isolated_name)
+
+
+
+
 class IO_OT_BatchImportLapins(Operator, ImportHelper):
-    """Import """
+    """Import all lapins in scene"""
     bl_idname = "io.batch_import_lapins"
     bl_label = "Import all lapins"
     bl_options = {'REGISTER','UNDO'}
-
-    @classmethod
-    def poll(cls, context):
-        return context.mode == 'OBJECT' and context.active_object.type == 'ARMATURE'
     
     def execute(self, context):
+        #we list all the files in the folder 
+        fdir = self.properties.filepath
+        if path.isfile(fdir):
+            fdir = path.abspath(path.join(fdir, pardir))
+
+
+
+        #we import the default mesh_rig
+
+
+
+        rig_file  = get_addon_prefs().lapin_rig_file
+        with bpy.data.libraries.load(rig_file) as (data_from, data_to):
+            data_to.objects = data_from.objects
+
+        for obj in data_to.objects:
+            if obj.type == 'MESH' and obj.name.startswith('rabbit'):
+                bpy.data.collections["Collection"].objects.link(obj)
+                try: 
+                    modifier_to_remove = obj.modifiers.get("Subdivision")
+                    obj.modifiers.remove(modifier_to_remove)
+                except:
+                    print('No modifier subdiv to remove')
+                try:
+                    modifier_to_remove = obj.modifiers.get("Armature")
+                    obj.modifiers.remove(modifier_to_remove)
+                except:
+                    print('No modifier Armature to remove')
+
+
+
+        for file in listdir(fdir):
+            if not path.basename(file).endswith('.usda'):
+                continue
+            full_path = path.join(fdir, file)
+            bpy.ops.wm.usd_import(filepath=full_path, 
+                import_cameras=False, 
+                import_curves=False, 
+                import_lights=False, 
+                import_materials=True, 
+                import_meshes=True, 
+                import_volumes=False, 
+                scale=0.01, 
+                read_mesh_uvs=True, 
+                read_mesh_colors=False, 
+                import_subdiv=False, 
+                import_visible_only=True,
+                import_guide=False,
+                import_proxy=True,
+                import_render=True,
+                set_frame_range=True,
+                relative_path=True,
+                create_collection=True,
+                support_scene_instancing=False,
+                light_intensity_scale=1.0,
+                mtl_name_collision_mode='MAKE_UNIQUE',
+                import_usd_preview=True,
+                set_material_blend=True)
+            
+            for obj in context.selected_objects:
+                if obj.type != 'MESH':
+                    continue
+                matching_obj = find_matching_object(obj)
+
+
+                
+
+
+                data_transfer  = obj.modifiers.new(name='DATA_TRANSFER', type='DATA_TRANSFER')
+                data_transfer.object = matching_obj
+                data_transfer.use_vert_data = True
+                data_transfer.data_types_verts = {'VGROUP_WEIGHTS'}
+                data_transfer.vert_mapping = 'TOPOLOGY'
+
+
+                #we need to match the object in the orginal lapin collection
+            
+            print(f'done for {file}')
+
+
         return {'FINISHED'}
 
 
