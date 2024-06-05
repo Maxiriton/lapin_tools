@@ -31,9 +31,6 @@ class IO_OT_BatchImportLapins(Operator, ImportHelper):
 
 
         #we import the default mesh_rig
-
-
-
         rig_file  = get_addon_prefs().lapin_rig_file
         with bpy.data.libraries.load(rig_file) as (data_from, data_to):
             data_to.objects = data_from.objects
@@ -51,6 +48,9 @@ class IO_OT_BatchImportLapins(Operator, ImportHelper):
                     obj.modifiers.remove(modifier_to_remove)
                 except:
                     print('No modifier Armature to remove')
+
+
+
 
 
 
@@ -82,14 +82,20 @@ class IO_OT_BatchImportLapins(Operator, ImportHelper):
                 import_usd_preview=True,
                 set_material_blend=True)
             
+            skel_obj = None
+            for obj in context.selected_objects:
+                if obj.type == 'ARMATURE':
+                    skel_obj = obj
+                    break
+
+
             for obj in context.selected_objects:
                 if obj.type != 'MESH':
                     continue
                 matching_obj = find_matching_object(obj)
 
-
-                
-
+                for v_group in matching_obj.vertex_groups:
+                    obj.vertex_groups.new(name=v_group.name)
 
                 data_transfer  = obj.modifiers.new(name='DATA_TRANSFER', type='DATA_TRANSFER')
                 data_transfer.object = matching_obj
@@ -97,9 +103,16 @@ class IO_OT_BatchImportLapins(Operator, ImportHelper):
                 data_transfer.data_types_verts = {'VGROUP_WEIGHTS'}
                 data_transfer.vert_mapping = 'TOPOLOGY'
 
+                context.view_layer.objects.active = obj
+                bpy.ops.object.modifier_apply(modifier=data_transfer.name)
 
-                #we need to match the object in the orginal lapin collection
-            
+                #we sanitize vertex_group to match the name in armature
+                for v_group in obj.vertex_groups:
+                    v_group.name = v_group.name.replace('.','_')
+
+                #we add the armature to the piece
+                armature_mod = obj.modifiers.new(name="ARMATURE", type="ARMATURE")
+                armature_mod.object = skel_obj
             print(f'done for {file}')
 
 
