@@ -3,7 +3,7 @@ import re
 from bpy.types import Operator
 from bpy_extras.io_utils import ImportHelper
 from os import listdir, path, pardir
-
+from random import random
 from .utils import get_addon_prefs
 
 def find_matching_object(object):
@@ -11,6 +11,9 @@ def find_matching_object(object):
     isolated_name = re.search("(rabbit_[a-zA-Z]+)(_[MRL])?", name)
     isolated_name = isolated_name.group(0)
     isolated_name = isolated_name.replace('_M','.M').replace('_L','.L').replace('_R','.R')
+
+    if isolated_name.endswith('Shape'):
+        isolated_name = isolated_name[:-5]
     return bpy.data.objects.get(isolated_name)
 
 
@@ -52,9 +55,9 @@ class IO_OT_BatchImportLapins(Operator, ImportHelper):
 
 
 
+        
 
-
-        for file in listdir(fdir):
+        for file_index, file in enumerate(listdir(fdir)):
             if not path.basename(file).endswith('.usda'):
                 continue
             full_path = path.join(fdir, file)
@@ -89,10 +92,17 @@ class IO_OT_BatchImportLapins(Operator, ImportHelper):
                     break
 
 
+            random_value = random()
             for obj in context.selected_objects:
                 if obj.type != 'MESH':
                     continue
                 matching_obj = find_matching_object(obj)
+
+                mesh = obj.data
+                attribute = mesh.attributes.new(name="color_index", type="FLOAT", domain="POINT")
+                attribute_values = [random_value for i in range(len(mesh.vertices))]
+                attribute.data.foreach_set("value", attribute_values)
+
 
                 for v_group in matching_obj.vertex_groups:
                     obj.vertex_groups.new(name=v_group.name)
@@ -104,7 +114,10 @@ class IO_OT_BatchImportLapins(Operator, ImportHelper):
                 data_transfer.vert_mapping = 'TOPOLOGY'
 
                 context.view_layer.objects.active = obj
-                bpy.ops.object.modifier_apply(modifier=data_transfer.name)
+                try:
+                    bpy.ops.object.modifier_apply(modifier=data_transfer.name)
+                except:
+                    print(f"Impossible d'appliquer le modificateur data_trasfer pour {obj}")
 
                 #we sanitize vertex_group to match the name in armature
                 for v_group in obj.vertex_groups:
