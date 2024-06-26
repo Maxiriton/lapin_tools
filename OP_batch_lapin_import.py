@@ -55,11 +55,6 @@ class IO_OT_BatchImportLapins(Operator, ImportHelper):
                 except:
                     print('No modifier Armature to remove')
 
-
-
-
-        
-
         for file_index, file in enumerate(listdir(fdir)):
             if not path.basename(file).endswith('.usda'):
                 continue
@@ -88,11 +83,11 @@ class IO_OT_BatchImportLapins(Operator, ImportHelper):
                 import_usd_preview=True,
                 set_material_blend=True)
             
-        #     skel_obj = None
-        #     for obj in context.selected_objects:
-        #         if obj.type == 'ARMATURE':
-        #             skel_obj = obj
-        #             break
+            skel_obj = None
+            for obj in context.selected_objects:
+                if obj.type == 'ARMATURE':
+                    skel_obj = obj
+                    break
 
 
             random_value = random()
@@ -100,6 +95,7 @@ class IO_OT_BatchImportLapins(Operator, ImportHelper):
                 if obj.type != 'MESH':
                     continue
                 matching_obj = find_matching_object(obj)
+
 
                 mesh = obj.data
                 attribute = mesh.attributes.new(name="color_index", type="FLOAT", domain="POINT")
@@ -118,27 +114,27 @@ class IO_OT_BatchImportLapins(Operator, ImportHelper):
                     print(f"Impossible d'appliquer le modificateur data_trasfer pour {obj}")
 
 
-        #         for v_group in matching_obj.vertex_groups:
-        #             obj.vertex_groups.new(name=v_group.name)
+                for v_group in matching_obj.vertex_groups:
+                    obj.vertex_groups.new(name=v_group.name)
 
-        #         data_transfer  = obj.modifiers.new(name='DATA_TRANSFER', type='DATA_TRANSFER')
-        #         data_transfer.object = matching_obj
-        #         data_transfer.use_vert_data = True
-        #         data_transfer.data_types_verts = {'VGROUP_WEIGHTS'}
-        #         data_transfer.vert_mapping = 'TOPOLOGY'
+                data_transfer  = obj.modifiers.new(name='DATA_TRANSFER', type='DATA_TRANSFER')
+                data_transfer.object = matching_obj
+                data_transfer.use_vert_data = True
+                data_transfer.data_types_verts = {'VGROUP_WEIGHTS'}
+                data_transfer.vert_mapping = 'TOPOLOGY'
 
-        #         context.view_layer.objects.active = obj
-        #         bpy.ops.object.modifier_apply(modifier=data_transfer.name)
+                context.view_layer.objects.active = obj
+                bpy.ops.object.modifier_apply(modifier=data_transfer.name)
 
-        #         #we sanitize vertex_group to match the name in armature
-        #         for v_group in obj.vertex_groups:
-        #             v_group.name = v_group.name.replace('.','_')
+                #we sanitize vertex_group to match the name in armature
+                for v_group in obj.vertex_groups:
+                    v_group.name = v_group.name.replace('.','_')
 
-        #         #we add the armature to the piece
-        #         armature_mod = obj.modifiers.new(name="ARMATURE", type="ARMATURE")
-        #         armature_mod.object = skel_obj
-        #     print(f'done for {file}')
-        #     break
+                #we add the armature to the piece
+                armature_mod = obj.modifiers.new(name="ARMATURE", type="ARMATURE")
+                armature_mod.object = skel_obj
+            print(f'done for {file}')
+
 
 
         return {'FINISHED'}
