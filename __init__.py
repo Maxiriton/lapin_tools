@@ -35,6 +35,8 @@ from bpy.types import AddonPreferences
 from bpy.props import StringProperty
 from . import OP_batch_fbx_export
 from . import OP_batch_lapin_import
+from . import OP_bake_anim_to_bone
+from . import OP_batch_rename_fcurves
 
 
 class LAPINS_prefs(AddonPreferences):
@@ -68,6 +70,8 @@ classes = (
 addon_modules = (
     OP_batch_fbx_export,
     OP_batch_lapin_import,
+    OP_bake_anim_to_bone,
+    OP_batch_rename_fcurves
 )
 
 def register():
