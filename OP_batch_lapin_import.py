@@ -32,6 +32,9 @@ class IO_OT_BatchImportLapins(Operator, ImportHelper):
             fdir = path.abspath(path.join(fdir, pardir))
 
 
+        if not bpy.data.collections.get("LapinOriginalRIg"):
+            col = bpy.data.collections.new("LapinOriginalRIg")
+            context.scene.collection.children.link(col)
 
         #we import the default mesh_rig
         rig_file  = get_addon_prefs().lapin_rig_file
@@ -40,7 +43,7 @@ class IO_OT_BatchImportLapins(Operator, ImportHelper):
 
         for obj in data_to.objects:
             if obj.type == 'MESH' and obj.name.startswith('rabbit'):
-                bpy.data.collections["Collection"].objects.link(obj)
+                bpy.data.collections["LapinOriginalRIg"].objects.link(obj)
                 try: 
                     modifier_to_remove = obj.modifiers.get("Subdivision")
                     obj.modifiers.remove(modifier_to_remove)
@@ -85,11 +88,11 @@ class IO_OT_BatchImportLapins(Operator, ImportHelper):
                 import_usd_preview=True,
                 set_material_blend=True)
             
-            skel_obj = None
-            for obj in context.selected_objects:
-                if obj.type == 'ARMATURE':
-                    skel_obj = obj
-                    break
+        #     skel_obj = None
+        #     for obj in context.selected_objects:
+        #         if obj.type == 'ARMATURE':
+        #             skel_obj = obj
+        #             break
 
 
             random_value = random()
@@ -107,11 +110,6 @@ class IO_OT_BatchImportLapins(Operator, ImportHelper):
                 for v_group in matching_obj.vertex_groups:
                     obj.vertex_groups.new(name=v_group.name)
 
-                data_transfer  = obj.modifiers.new(name='DATA_TRANSFER', type='DATA_TRANSFER')
-                data_transfer.object = matching_obj
-                data_transfer.use_vert_data = True
-                data_transfer.data_types_verts = {'VGROUP_WEIGHTS'}
-                data_transfer.vert_mapping = 'TOPOLOGY'
 
                 context.view_layer.objects.active = obj
                 try:
@@ -119,14 +117,28 @@ class IO_OT_BatchImportLapins(Operator, ImportHelper):
                 except:
                     print(f"Impossible d'appliquer le modificateur data_trasfer pour {obj}")
 
-                #we sanitize vertex_group to match the name in armature
-                for v_group in obj.vertex_groups:
-                    v_group.name = v_group.name.replace('.','_')
 
-                #we add the armature to the piece
-                armature_mod = obj.modifiers.new(name="ARMATURE", type="ARMATURE")
-                armature_mod.object = skel_obj
-            print(f'done for {file}')
+        #         for v_group in matching_obj.vertex_groups:
+        #             obj.vertex_groups.new(name=v_group.name)
+
+        #         data_transfer  = obj.modifiers.new(name='DATA_TRANSFER', type='DATA_TRANSFER')
+        #         data_transfer.object = matching_obj
+        #         data_transfer.use_vert_data = True
+        #         data_transfer.data_types_verts = {'VGROUP_WEIGHTS'}
+        #         data_transfer.vert_mapping = 'TOPOLOGY'
+
+        #         context.view_layer.objects.active = obj
+        #         bpy.ops.object.modifier_apply(modifier=data_transfer.name)
+
+        #         #we sanitize vertex_group to match the name in armature
+        #         for v_group in obj.vertex_groups:
+        #             v_group.name = v_group.name.replace('.','_')
+
+        #         #we add the armature to the piece
+        #         armature_mod = obj.modifiers.new(name="ARMATURE", type="ARMATURE")
+        #         armature_mod.object = skel_obj
+        #     print(f'done for {file}')
+        #     break
 
 
         return {'FINISHED'}
