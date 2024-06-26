@@ -52,7 +52,8 @@ class LAPINS_prefs(AddonPreferences):
     lapin_rig_file : StringProperty(
         name="Lapin Rig File",
         description="Path to the blend file where Lapin's rig is located",
-        default="\\\\192.168.6.241\\rab00-rech-tests-dev\\LAPIN3\\Entites\\Personnages\\Lapin\\Rig\\char_rabbit_rig_v00.blend",
+        # default="\\\\192.168.6.241\\rab00-rech-tests-dev\\LAPIN3\\Entites\\Personnages\\Lapin\\Rig\\char_rabbit_rig_v00.blend",
+        default="C:\\Users\\Henri\\Desktop\\Lapin_local\\pers_lapin_rig_v00.blend",
         subtype='FILE_PATH'
     )
 
