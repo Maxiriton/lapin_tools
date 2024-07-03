@@ -10,7 +10,7 @@ def find_matching_object(object):
     name = object.name
     isolated_name = re.search("(rabbit_[a-zA-Z]+)(_[MRL])?", name)
     isolated_name = isolated_name.group(0)
-    #isolated_name = isolated_name.replace('_M','.M').replace('_L','.L').replace('_R','.R')
+    isolated_name = isolated_name.replace('_M','.M').replace('_L','.L').replace('_R','.R')
 
     if isolated_name.endswith('Shape'):
         isolated_name = isolated_name[:-5]
