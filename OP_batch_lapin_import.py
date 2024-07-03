@@ -3,20 +3,19 @@ import re
 from bpy.types import Operator
 from bpy_extras.io_utils import ImportHelper
 from os import listdir, path, pardir
-from random import random
+import random
 from .utils import get_addon_prefs
 
 def find_matching_object(object):
     name = object.name
     isolated_name = re.search("(rabbit_[a-zA-Z]+)(_[MRL])?", name)
     isolated_name = isolated_name.group(0)
-    isolated_name = isolated_name.replace('_M','.M').replace('_L','.L').replace('_R','.R')
+    #isolated_name = isolated_name.replace('_M','.M').replace('_L','.L').replace('_R','.R')
 
     if isolated_name.endswith('Shape'):
         isolated_name = isolated_name[:-5]
+
     return bpy.data.objects.get(isolated_name)
-
-
 
 
 class IO_OT_BatchImportLapins(Operator, ImportHelper):
@@ -31,11 +30,16 @@ class IO_OT_BatchImportLapins(Operator, ImportHelper):
         if path.isfile(fdir):
             fdir = path.abspath(path.join(fdir, pardir))
 
-
         if not bpy.data.collections.get("LapinOriginalRIg"):
             col = bpy.data.collections.new("LapinOriginalRIg")
             context.scene.collection.children.link(col)
 
+
+        if not bpy.data.collections.get("LapinsCrowd"):
+            col_crowd = bpy.data.collections.new("LapinsCrowd")
+            context.scene.collection.children.link(col_crowd)
+
+        col_crowd = bpy.data.collections.get("LapinsCrowd")
         #we import the default mesh_rig
         rig_file  = get_addon_prefs().lapin_rig_file
         with bpy.data.libraries.load(rig_file) as (data_from, data_to):
@@ -83,14 +87,22 @@ class IO_OT_BatchImportLapins(Operator, ImportHelper):
                 import_usd_preview=True,
                 set_material_blend=True)
             
+            active_col = context.collection
+        
+            context.scene.collection.children.unlink(active_col)
+            col_crowd.children.link(active_col)
+
             skel_obj = None
             for obj in context.selected_objects:
                 if obj.type == 'ARMATURE':
                     skel_obj = obj
                     break
 
+            regex_number = re.search("Entity_(\d+).", file)
+            regex_number = regex_number.group(0)
 
-            random_value = random()
+            random.seed(regex_number)
+            random_value = random.random()
             for obj in context.selected_objects:
                 if obj.type != 'MESH':
                     continue
@@ -134,11 +146,7 @@ class IO_OT_BatchImportLapins(Operator, ImportHelper):
                 armature_mod = obj.modifiers.new(name="ARMATURE", type="ARMATURE")
                 armature_mod.object = skel_obj
             print(f'done for {file}')
-
-
-
         return {'FINISHED'}
-
 
 ### Registration
 
